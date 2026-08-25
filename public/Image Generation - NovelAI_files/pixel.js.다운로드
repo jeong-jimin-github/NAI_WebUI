@@ -9,11 +9,41 @@
     s.onerror = reject;
     document.head.appendChild(s);
   });
+
+  function cleanSavedSnapshotArtifacts() {
+    document.querySelectorAll('.image-gen-page > .sc-b3be1afb-0, .sc-594a256-0').forEach(el => {
+      el.style.setProperty('display', 'none', 'important');
+      el.setAttribute('aria-hidden', 'true');
+    });
+    document.querySelectorAll('iframe[src*="anchor.html"], iframe[src*="recaptcha"], .g-recaptcha').forEach(el => {
+      el.style.setProperty('display', 'none', 'important');
+      el.setAttribute('aria-hidden', 'true');
+    });
+    document.querySelectorAll('img[src*="Image Generation - NovelAI_files/"]').forEach(img => {
+      const markBroken = () => {
+        img.style.setProperty('display', 'none', 'important');
+        const tile = img.closest('.sc-d37e851d-4');
+        if (tile) tile.classList.add('nai-gallery-missing');
+      };
+      img.addEventListener('error', markBroken, { once: true });
+      if (img.complete && !img.naturalWidth) markBroken();
+    });
+  }
+
   (async () => {
     try {
       await load(new URL('static-adapter.js', base).href);
-      await load('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');
+      // The UI bridge must not depend on a third-party CDN being reachable.
+      // JSZip is optional until an actual generation response needs ZIP decoding.
+      load('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js').catch(error => {
+        console.warn('[NAI WebUI] JSZip CDN unavailable; UI/auth still work.', error);
+      });
       await load(new URL('official-dom-bridge.js', base).href);
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', cleanSavedSnapshotArtifacts, { once: true });
+      } else {
+        cleanSavedSnapshotArtifacts();
+      }
     } catch (error) {
       console.error('[NAI WebUI] bootstrap failed', error);
     }
