@@ -1,5 +1,10 @@
 /* Compatibility rules for DOM that app.js creates at runtime. */
 .generate-symbol{display:none}
+/* app.js writes Korean status text into the second span. Keep the visual label
+   consistent with NovelAI's Image Generation button without changing API logic. */
+.generate-label{font-size:0}
+.generate-label::before{content:"Generate";font-size:16px}
+.image-gen-generate-button:disabled .generate-label::before{content:"Generating…"}
 body.history-collapsed .app-shell{grid-template-columns:minmax(340px,var(--panel-width)) minmax(0,1fr) 0}
 body.history-collapsed .history-panel{visibility:hidden;border-left:0;overflow:hidden}
 
