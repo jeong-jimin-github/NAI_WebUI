@@ -1,0 +1,21 @@
+(() => {
+  'use strict';
+  const base = new URL('../', document.currentScript.src);
+  const load = src => new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.defer = true;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  (async () => {
+    try {
+      await load(new URL('static-adapter.js', base).href);
+      await load('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');
+      await load(new URL('official-dom-bridge.js', base).href);
+    } catch (error) {
+      console.error('[NAI WebUI] bootstrap failed', error);
+    }
+  })();
+})();
