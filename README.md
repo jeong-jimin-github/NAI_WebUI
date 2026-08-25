@@ -2,6 +2,14 @@
 
 NovelAI Image Generation API를 사용하는 비공식 WebUI입니다. NovelAI 공식 이미지 생성 화면의 어두운 3패널 작업 흐름을 참고하되, 공식 로고/에셋을 복제하지 않고 별도 구현했습니다.
 
+## Deploy
+
+**GitHub Pages:** https://jeong-jimin-github.github.io/NAI_WebUI/
+
+`main` 브랜치에 push될 때 GitHub Actions가 `public/` 디렉터리를 GitHub Pages로 자동 배포합니다.
+
+> GitHub Pages는 정적 호스팅이므로 `server.js`의 NovelAI API 프록시는 실행되지 않습니다. 완전한 API 기능은 아래 로컬/Node.js 실행 방식을 사용해야 합니다.
+
 ## 주요 기능
 
 - **NovelAI Diffusion V5**: `nai-diffusion-5-curated`, `nai-diffusion-5-full`
