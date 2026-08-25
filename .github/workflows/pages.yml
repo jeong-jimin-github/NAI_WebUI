@@ -24,6 +24,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare static Pages build
+        run: |
+          sed -i 's|href="/styles.css"|href="./styles.css"|' public/index.html
+          sed -i 's|<script type="module" src="/app.js"></script>|<script src="./static-adapter.js"></script><script type="module" src="./app.js"></script>|' public/index.html
+          sed -i 's|키와 비밀번호는 이 서버 외부에 저장되지 않습니다.|키와 비밀번호는 브라우저에서만 처리되며 별도 서버로 전송하지 않습니다.|' public/index.html
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
