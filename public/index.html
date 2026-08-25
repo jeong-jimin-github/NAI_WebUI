@@ -1,166 +1,203 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#191b31" />
-  <title>NAI WebUI</title>
+  <meta name="theme-color" content="#13152c" />
+  <title>Image Generation - NAI WebUI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Eczar:wght@400;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
 <div id="app" class="app-shell">
-  <header class="topbar">
-    <div class="brand"><span class="brand-mark">N</span><span>NAI <b>WebUI</b></span><span class="unofficial">UNOFFICIAL</span></div>
-    <div class="top-center"><select id="modelSelect" class="model-select" aria-label="모델"></select></div>
-    <div class="account-area">
-      <button id="anlasButton" class="anlas-chip" title="Anlas 새로고침"><span class="spark">✦</span><span id="anlasValue">—</span><small id="tierValue">로그인 필요</small></button>
-      <button id="authButton" class="icon-button wide">로그인</button>
+  <aside class="generator-panel" id="settingsPanel" data-layout-panel>
+    <header class="topbar image-gen-navbar">
+      <div class="nav-row">
+        <div class="nai-mark" aria-hidden="true">N</div>
+        <div class="nav-title">Image Generation</div>
+        <button id="anlasButton" class="anlas-chip" type="button" title="Refresh Anlas">
+          <span class="spark">◆</span><span id="anlasValue">—</span><small id="tierValue">Login required</small>
+        </button>
+        <button id="authButton" class="icon-button wide" type="button">Log In</button>
+      </div>
+      <div class="model-row">
+        <select id="modelSelect" class="model-select" aria-label="Model"></select>
+      </div>
+    </header>
+
+    <div class="legacy-tabs hidden" aria-hidden="true">
+      <button class="tab active" data-tab="prompt" type="button"></button>
+      <button class="tab" data-tab="characters" type="button"></button>
+      <button class="tab" id="referenceTabButton" data-tab="reference" type="button"></button>
+      <button class="tab" data-tab="image" type="button"></button>
+      <button class="tab" data-tab="tools" type="button"></button>
     </div>
-  </header>
 
-  <div class="legacy-tabs hidden" aria-hidden="true">
-    <button class="tab active" data-tab="prompt" type="button"></button>
-    <button class="tab" data-tab="characters" type="button"></button>
-    <button class="tab" id="referenceTabButton" data-tab="reference" type="button"></button>
-    <button class="tab" data-tab="image" type="button"></button>
-    <button class="tab" data-tab="tools" type="button"></button>
-  </div>
-
-  <aside class="generator-panel" id="settingsPanel">
     <div class="generator-scroll panel-scroll" id="generatorScroll">
       <section class="mode-row" id="section-prompt">
-        <div class="section-kicker">이미지 생성</div>
-        <select id="modeSelect" class="mode-select" aria-label="태그 모드">
-          <option value="anime">애니메이션</option>
-          <option value="fur">퍼리</option>
-          <option value="background">배경</option>
+        <div class="section-kicker">Prompt</div>
+        <select id="modeSelect" class="mode-select" aria-label="Dataset">
+          <option value="anime">Anime</option>
+          <option value="fur">Furry</option>
+          <option value="background">Background</option>
         </select>
       </section>
 
-      <section class="prompt-panel">
+      <section class="prompt-panel image-gen-prompt">
         <div class="prompt-tabs" role="tablist">
-          <button class="prompt-tab active" data-prompt-tab="positive" type="button">프롬프트</button>
+          <button class="prompt-tab active" data-prompt-tab="positive" type="button">Prompt</button>
           <button class="prompt-tab" data-prompt-tab="negative" type="button">Undesired Content</button>
         </div>
 
         <div id="positivePromptPane" class="prompt-pane active">
           <div class="prompt-field compact-field">
-            <label for="promptPrefixInput">선행 프롬프트</label>
-            <textarea id="promptPrefixInput" rows="1" autocomplete="off" spellcheck="false" placeholder="앞에 고정할 태그"></textarea>
+            <label for="promptPrefixInput">Prefix</label>
+            <textarea id="promptPrefixInput" rows="1" autocomplete="off" spellcheck="false" placeholder="Optional prefix tags"></textarea>
           </div>
           <div class="prompt-field main-field">
-            <label for="promptInput">메인 프롬프트</label>
-            <textarea id="promptInput" rows="4" autocomplete="off" spellcheck="false" placeholder="그리고 싶은 내용을 입력하세요. 예: 1girl, long hair, classroom"></textarea>
+            <label for="promptInput">Prompt</label>
+            <textarea id="promptInput" rows="5" autocomplete="off" spellcheck="false" placeholder="Describe what you want to see..."></textarea>
           </div>
           <div class="prompt-field compact-field">
-            <label for="promptSuffixInput">후행 프롬프트</label>
-            <textarea id="promptSuffixInput" rows="1" autocomplete="off" spellcheck="false" placeholder="뒤에 고정할 태그"></textarea>
+            <label for="promptSuffixInput">Suffix</label>
+            <textarea id="promptSuffixInput" rows="1" autocomplete="off" spellcheck="false" placeholder="Optional suffix tags"></textarea>
           </div>
-          <div id="tagSuggestions" class="tag-suggestions hidden" role="listbox" aria-label="프롬프트 자동완성"></div>
+          <div id="tagSuggestions" class="tag-suggestions hidden" role="listbox" aria-label="Prompt autocomplete"></div>
           <div class="prompt-meta-row">
-            <span id="promptAutocompleteBadge" class="support-badge">자동완성 사용 가능</span>
-            <span><b id="promptLength">0</b>자</span>
+            <span id="promptAutocompleteBadge" class="support-badge">Autocomplete</span>
+            <span><b id="promptLength">0</b> chars</span>
           </div>
-          <div id="autocompleteHelp" class="prompt-help">V4.5: 한국어 태그 목록은 즉시 검색되고, 로그인 시 NovelAI 공식 추천 결과도 함께 표시됩니다.</div>
-          <div id="autocompleteDisabledHelp" class="prompt-help hidden">V5에서는 프롬프트 자동완성을 표시하지 않습니다.</div>
+          <div id="autocompleteHelp" class="prompt-help">V4.5 tag suggestions are available while typing.</div>
+          <div id="autocompleteDisabledHelp" class="prompt-help hidden">Prompt autocomplete is unavailable for V5.</div>
         </div>
 
         <div id="negativePromptPane" class="prompt-pane">
           <div class="prompt-field main-field">
             <label for="negativeInput">Undesired Content</label>
-            <textarea id="negativeInput" rows="6" spellcheck="false" placeholder="원하지 않는 요소를 입력하세요."></textarea>
+            <textarea id="negativeInput" rows="7" spellcheck="false" placeholder="Describe what should not appear..."></textarea>
           </div>
           <div class="inline-select-row">
-            <label for="ucPreset">UC 프리셋</label>
-            <select id="ucPreset"><option value="0">강함</option><option value="1">약함</option><option value="2">인물 중심</option><option value="3">강함 + 해부학</option></select>
+            <label for="ucPreset">UC Preset</label>
+            <select id="ucPreset">
+              <option value="0">Heavy</option>
+              <option value="1">Light</option>
+              <option value="2">Human Focus</option>
+              <option value="3">Heavy + Anatomy</option>
+            </select>
           </div>
         </div>
 
         <div class="prompt-controls">
-          <label class="mini-toggle" id="alphaToggleRow"><input id="alphaToggle" type="checkbox"><span>투명 배경</span></label>
-          <label class="mini-toggle"><input id="qualityToggle" type="checkbox" checked><span>품질 태그: 표준</span></label>
+          <label class="mini-toggle" id="alphaToggleRow"><input id="alphaToggle" type="checkbox"><span>Transparent Background</span></label>
+          <label class="mini-toggle"><input id="qualityToggle" type="checkbox" checked><span>Quality Tags</span></label>
         </div>
       </section>
 
       <section class="sidebar-section" id="section-characters">
-        <div class="section-title"><div><b>캐릭터 프롬프트</b><small>장면 속 캐릭터별 프롬프트를 분리합니다.</small></div><button id="addCharacter" class="primary-small">+ 추가</button></div>
+        <div class="section-title">
+          <div><b>Character Prompts</b><small>Separate prompts for individual characters.</small></div>
+          <button id="addCharacter" class="primary-small" type="button">+ Add</button>
+        </div>
         <div id="characterList" class="character-list"></div>
         <span id="charCount" class="hidden">0</span>
       </section>
 
       <section class="sidebar-section" id="section-reference">
-        <div class="section-title"><div><b>참조 이미지</b><small>V4.5에서만 사용할 수 있습니다.</small></div><span id="refCount" class="count-badge">0</span></div>
+        <div class="section-title"><div><b>Reference Images</b><small>Available with NAI Diffusion V4.5.</small></div><span id="refCount" class="count-badge">0</span></div>
         <div id="preciseCard" class="reference-block">
           <div class="reference-head"><b>Precise Reference</b><span id="preciseSupport" class="support-badge">V4.5</span></div>
-          <label class="dropzone compact"><input id="preciseInput" type="file" accept="image/*" multiple><span>+ 정확한 참조 이미지</span></label>
+          <label class="dropzone compact"><input id="preciseInput" type="file" accept="image/*" multiple><span>+ Add precise reference</span></label>
           <div id="preciseList" class="reference-list"></div>
         </div>
         <div id="vibeCard" class="reference-block">
           <div class="reference-head"><b>Vibe Transfer</b><span id="vibeSupport" class="support-badge">V4.5</span></div>
-          <label class="dropzone compact"><input id="vibeInput" type="file" accept="image/*" multiple><span>+ 분위기 참조 이미지</span></label>
+          <label class="dropzone compact"><input id="vibeInput" type="file" accept="image/*" multiple><span>+ Add vibe reference</span></label>
           <div id="vibeList" class="reference-list"></div>
         </div>
-        <div id="referenceNotice" class="notice hidden">현재 모델은 참조 이미지 기능을 지원하지 않습니다.</div>
+        <div id="referenceNotice" class="notice hidden">Reference images are unavailable for the selected model.</div>
       </section>
 
       <section class="sidebar-section" id="section-image">
-        <div class="section-title"><div><b>Image2Image</b><small>업로드 이미지를 변형하거나 마스크 영역을 수정합니다.</small></div></div>
-        <label class="dropzone compact"><input id="baseImageInput" type="file" accept="image/*"><span>+ 원본 이미지</span></label><button id="clearBaseImage" class="text-button clear-image-button" type="button">원본 이미지 제거</button>
+        <div class="section-title"><div><b>Image2Image</b><small>Use an image as the starting point or inpaint selected areas.</small></div></div>
+        <label class="dropzone compact"><input id="baseImageInput" type="file" accept="image/*"><span>+ Add base image</span></label>
+        <button id="clearBaseImage" class="text-button clear-image-button" type="button">Remove base image</button>
         <div id="basePreview" class="source-preview small"></div>
         <div class="segmented top-gap"><button class="active" data-image-mode="img2img" type="button">Img2Img</button><button data-image-mode="inpaint" type="button">Inpaint</button></div>
-        <div class="label-row top-gap"><label>강도</label><output id="strengthOut">0.50</output></div><input id="strengthInput" type="range" min="0" max="1" step="0.01" value="0.5">
-        <div class="label-row top-gap"><label>노이즈</label><output id="noiseOut">0.00</output></div><input id="noiseInput" type="range" min="0" max="1" step="0.01" value="0">
-        <div id="maskArea" class="hidden"><label class="setting-label top-gap">마스크</label><label class="dropzone compact"><input id="maskInput" type="file" accept="image/*"><span>+ 마스크 업로드</span></label><div id="maskPreview" class="source-preview small"></div></div>
+        <div class="label-row top-gap"><label>Strength</label><output id="strengthOut">0.50</output></div><input id="strengthInput" type="range" min="0" max="1" step="0.01" value="0.5">
+        <div class="label-row top-gap"><label>Noise</label><output id="noiseOut">0.00</output></div><input id="noiseInput" type="range" min="0" max="1" step="0.01" value="0">
+        <div id="maskArea" class="hidden"><label class="setting-label top-gap">Mask</label><label class="dropzone compact"><input id="maskInput" type="file" accept="image/*"><span>+ Add mask</span></label><div id="maskPreview" class="source-preview small"></div></div>
       </section>
 
       <section class="sidebar-section image-settings" id="section-settings">
-        <div class="section-title"><div><b>이미지 설정</b><small>NovelAI 생성 파라미터</small></div><button class="text-button" id="resetSettings">초기화</button></div>
-        <label class="setting-label">해상도</label>
+        <div class="section-title"><div><b>Image Settings</b><small>Generation parameters</small></div><button class="text-button" id="resetSettings" type="button">Reset</button></div>
+        <label class="setting-label">Resolution</label>
         <div class="resolution-grid" id="resolutionPresets"></div>
-        <div class="dimension-row"><input id="widthInput" aria-label="가로" type="number" min="64" max="4096" step="64" value="832"><span>×</span><input id="heightInput" aria-label="세로" type="number" min="64" max="4096" step="64" value="1216"></div>
-        <div class="inline-fields two top-gap"><label><span>이미지 수</span><input id="samplesInput" type="number" min="1" max="4" value="1"></label><label><span>CFG Rescale</span><input id="cfgRescaleInput" type="number" min="0" max="1" step="0.01" value="0"></label></div>
+        <div class="dimension-row"><input id="widthInput" aria-label="Width" type="number" min="64" max="4096" step="64" value="832"><span>×</span><input id="heightInput" aria-label="Height" type="number" min="64" max="4096" step="64" value="1216"></div>
+        <div class="inline-fields two top-gap"><label><span>Number of Images</span><input id="samplesInput" type="number" min="1" max="4" value="1"></label><label><span>CFG Rescale</span><input id="cfgRescaleInput" type="number" min="0" max="1" step="0.01" value="0"></label></div>
       </section>
 
       <section class="sidebar-section ai-settings">
         <div class="compact-settings-grid">
-          <label><span>스텝</span><div><input id="stepsInput" type="range" min="1" max="50" value="28"><output id="stepsOut">28</output></div></label>
-          <label><span>가이던스</span><div><input id="scaleInput" type="range" min="0" max="20" step="0.1" value="6"><output id="scaleOut">6.0</output></div></label>
+          <label><span>Steps</span><div><input id="stepsInput" type="range" min="1" max="50" value="28"><output id="stepsOut">28</output></div></label>
+          <label><span>Prompt Guidance</span><div><input id="scaleInput" type="range" min="0" max="20" step="0.1" value="6"><output id="scaleOut">6.0</output></div></label>
         </div>
-        <div class="inline-fields two top-gap"><label><span>샘플러</span><select id="samplerSelect"><option value="k_euler_ancestral">Euler Ancestral</option><option value="k_euler">Euler</option><option value="k_dpmpp_2m">DPM++ 2M</option><option value="k_dpmpp_sde">DPM++ SDE</option><option value="k_dpmpp_2m_sde">DPM++ 2M SDE</option><option value="k_dpmpp_2s_ancestral">DPM++ 2S Ancestral</option><option value="ddim_v3">DDIM</option></select></label><label><span>노이즈 스케줄</span><select id="schedulerSelect"><option value="karras">Karras</option><option value="native">Native</option><option value="exponential">Exponential</option><option value="polyexponential">Polyexponential</option></select></label></div>
-        <div class="seed-row top-gap"><input id="seedInput" type="number" min="-1" max="4294967295" value="-1"><button id="randomSeed" class="mini-button">랜덤 시드</button></div>
-        <label class="toggle-row compact-toggle" id="varietyToggleRow"><div><b>Variety Boost</b><small>V4.5용 CFG 다양성 보정</small></div><input id="varietyToggle" type="checkbox" checked></label>
+        <div class="inline-fields two top-gap"><label><span>Sampler</span><select id="samplerSelect"><option value="k_euler_ancestral">Euler Ancestral</option><option value="k_euler">Euler</option><option value="k_dpmpp_2m">DPM++ 2M</option><option value="k_dpmpp_sde">DPM++ SDE</option><option value="k_dpmpp_2m_sde">DPM++ 2M SDE</option><option value="k_dpmpp_2s_ancestral">DPM++ 2S Ancestral</option><option value="ddim_v3">DDIM</option></select></label><label><span>Noise Schedule</span><select id="schedulerSelect"><option value="karras">Karras</option><option value="native">Native</option><option value="exponential">Exponential</option><option value="polyexponential">Polyexponential</option></select></label></div>
+        <div class="seed-row top-gap"><input id="seedInput" type="number" min="-1" max="4294967295" value="-1"><button id="randomSeed" class="mini-button" type="button">Random Seed</button></div>
+        <label class="toggle-row compact-toggle" id="varietyToggleRow"><div><b>Variety Boost</b><small>CFG diversity adjustment for V4.5</small></div><input id="varietyToggle" type="checkbox" checked></label>
       </section>
 
       <details class="sidebar-section tool-details" id="section-tools">
         <summary>Director Tools</summary>
-        <div class="tool-body"><label class="dropzone compact"><input id="toolImageInput" type="file" accept="image/*"><span>+ 도구 원본 이미지</span></label><button id="useSelectedForTool" class="secondary-full">선택한 생성 결과 사용</button><div id="toolPreview" class="source-preview small"></div><div class="tool-buttons"><button data-tool="lineart">Line Art</button><button data-tool="sketch">Sketch</button><button data-tool="bg-removal">배경 제거</button><button data-tool="declutter">Declutter</button><button data-tool="colorize">Colorize</button><button data-tool="emotion">Emotion</button><button data-tool="upscale2">업스케일 2×</button><button data-tool="upscale4">업스케일 4×</button></div><div class="tool-options"><label><span>도구 프롬프트</span><input id="toolPrompt" placeholder="선택 사항"></label><label><span>Defry</span><input id="toolDefry" type="number" min="0" max="5" value="0"></label><label><span>감정</span><select id="emotionSelect"><option>neutral</option><option>happy</option><option>sad</option><option>angry</option><option>scared</option><option>surprised</option><option>excited</option><option>thinking</option><option>confused</option><option>shy</option><option>smug</option><option>embarrassed</option><option>love</option><option>determined</option><option>playful</option></select></label></div></div>
+        <div class="tool-body">
+          <label class="dropzone compact"><input id="toolImageInput" type="file" accept="image/*"><span>+ Add source image</span></label>
+          <button id="useSelectedForTool" class="secondary-full" type="button">Use selected generation</button>
+          <div id="toolPreview" class="source-preview small"></div>
+          <div class="tool-buttons"><button data-tool="lineart" type="button">Line Art</button><button data-tool="sketch" type="button">Sketch</button><button data-tool="bg-removal" type="button">Background Removal</button><button data-tool="declutter" type="button">Declutter</button><button data-tool="colorize" type="button">Colorize</button><button data-tool="emotion" type="button">Emotion</button><button data-tool="upscale2" type="button">Upscale 2×</button><button data-tool="upscale4" type="button">Upscale 4×</button></div>
+          <div class="tool-options"><label><span>Tool Prompt</span><input id="toolPrompt" placeholder="Optional"></label><label><span>Defry</span><input id="toolDefry" type="number" min="0" max="5" value="0"></label><label><span>Emotion</span><select id="emotionSelect"><option>neutral</option><option>happy</option><option>sad</option><option>angry</option><option>scared</option><option>surprised</option><option>excited</option><option>thinking</option><option>confused</option><option>shy</option><option>smug</option><option>embarrassed</option><option>love</option><option>determined</option><option>playful</option></select></label></div>
+        </div>
       </details>
     </div>
 
     <div class="generate-footer">
-      <button id="generateButton" class="generate-button"><span class="generate-icon">✦</span><span>생성</span><small id="generateCost">API</small></button>
+      <button id="generateButton" class="generate-button image-gen-generate-button" type="button">
+        <span class="generate-label">Generate 1 Image</span>
+        <span class="generate-cost-wrap"><span id="generateCost">API</span><span class="anlas-label">Anlas</span></span>
+      </button>
     </div>
   </aside>
 
-  <main class="workspace">
+  <main class="workspace image-gen-results-stage">
     <div id="pinStrip" class="pin-strip hidden"></div>
-    <div id="viewer" class="viewer empty">
-      <div class="empty-state" id="emptyState"><div class="empty-glyph">✦</div><h1>상상을 시작하세요.</h1><p>왼쪽 패널에 프롬프트를 입력하고 생성하세요.</p><div class="feature-pills"><span>V4.5</span><span>V5</span><span>Img2Img</span><span>Director Tools</span></div></div>
+    <div id="viewer" class="viewer empty image-gen-output-region">
+      <div class="empty-state quickstart-gallery" id="emptyState">
+        <div class="quickstart-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+        <h1>Get Started</h1>
+        <p>Get Inspiration from our quick start gallery!</p>
+        <small>Enter a prompt and generate an image to begin.</small>
+      </div>
       <div id="resultsStack" class="results-stack"></div>
-      <div class="viewer-controls"><button id="zoomOut">−</button><span id="zoomValue">100%</span><button id="zoomIn">＋</button><button id="fitView">맞춤</button></div>
+      <div class="viewer-controls"><button id="zoomOut" type="button">−</button><span id="zoomValue">100%</span><button id="zoomIn" type="button">＋</button><button id="fitView" type="button">Fit</button></div>
     </div>
   </main>
 
   <aside class="history-panel panel-scroll" id="historyPanel">
-    <div class="panel-heading"><strong>히스토리</strong><div><button id="clearHistory" class="text-button" title="비우기">비우기</button><button id="collapseHistory" class="icon-button">›</button></div></div>
-    <div id="historyList" class="history-list"><div class="history-empty">생성 결과</div></div>
+    <div class="panel-heading"><strong>History</strong><div><button id="clearHistory" class="text-button" type="button" title="Clear">Clear</button><button id="collapseHistory" class="icon-button" type="button">›</button></div></div>
+    <div id="historyList" class="history-list"><div class="history-empty">Generated images</div></div>
   </aside>
 </div>
 
-<div id="authModal" class="modal-backdrop hidden"><div class="modal"><button class="modal-close" data-close-modal>×</button><div class="modal-brand"><span class="brand-mark">N</span><div><h2>NovelAI 연결</h2><p>인증 정보는 이 브라우저에서만 처리됩니다.</p></div></div><div class="segmented auth-tabs"><button class="active" data-auth-tab="token">API 토큰</button><button data-auth-tab="password">ID / 비밀번호</button></div><form id="tokenForm" class="auth-form"><label>Persistent API / Access Token<input id="tokenInput" type="password" autocomplete="off" placeholder="pst-… 또는 access token"></label><label class="checkline"><input id="rememberToken" type="checkbox"> 이 브라우저에 토큰 저장</label><button class="modal-primary" type="submit">연결</button><p class="form-help">가능하면 NovelAI Persistent API Token을 사용하세요.</p></form><form id="passwordForm" class="auth-form hidden"><label>Email / ID<input id="emailInput" type="email" autocomplete="username"></label><label>Password<input id="passwordInput" type="password" autocomplete="current-password"></label><button class="modal-primary" type="submit">로그인 후 연결</button><p class="form-help">비밀번호는 access key 계산에만 사용하고 저장하지 않습니다.</p></form><div id="authError" class="form-error hidden"></div></div></div>
+<div id="authModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <button class="modal-close" data-close-modal type="button">×</button>
+    <div class="modal-brand"><span class="nai-mark">N</span><div><h2>Connect NovelAI</h2><p>Credentials are handled only in this browser.</p></div></div>
+    <div class="segmented auth-tabs"><button class="active" data-auth-tab="token" type="button">API Token</button><button data-auth-tab="password" type="button">ID / Password</button></div>
+    <form id="tokenForm" class="auth-form"><label>Persistent API / Access Token<input id="tokenInput" type="password" autocomplete="off" placeholder="pst-… or access token"></label><label class="checkline"><input id="rememberToken" type="checkbox"> Remember token in this browser</label><button class="modal-primary" type="submit">Connect</button><p class="form-help">Persistent API Token is recommended.</p></form>
+    <form id="passwordForm" class="auth-form hidden"><label>Email / ID<input id="emailInput" type="email" autocomplete="username"></label><label>Password<input id="passwordInput" type="password" autocomplete="current-password"></label><button class="modal-primary" type="submit">Log In & Connect</button><p class="form-help">The password is used only to derive an access key and is not stored.</p></form>
+    <div id="authError" class="form-error hidden"></div>
+  </div>
+</div>
 <div id="toastLayer" class="toast-layer"></div>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="./static-adapter.js"></script>
