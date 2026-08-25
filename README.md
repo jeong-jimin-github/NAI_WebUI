@@ -1,6 +1,6 @@
 # NAI WebUI
 
-NovelAI Image Generation API를 사용하는 비공식 WebUI입니다. NovelAI 공식 이미지 생성 화면의 어두운 3패널 작업 흐름을 참고하되, 공식 로고/에셋을 복제하지 않고 별도 구현했습니다.
+NovelAI Image Generation API를 사용하는 **완전 정적 비공식 WebUI**입니다. 별도 Node/Render/Vercel 서버 없이 GitHub Pages에서 직접 작동합니다.
 
 ## Deploy
 
@@ -8,7 +8,7 @@ NovelAI Image Generation API를 사용하는 비공식 WebUI입니다. NovelAI �
 
 `main` 브랜치에 push될 때 GitHub Actions가 `public/` 디렉터리를 GitHub Pages로 자동 배포합니다.
 
-> GitHub Pages는 정적 호스팅이므로 `server.js`의 NovelAI API 프록시는 실행되지 않습니다. 완전한 API 기능은 아래 로컬/Node.js 실행 방식을 사용해야 합니다.
+정적 페이지의 `static-adapter.js`가 기존 `/api/...` 호출을 브라우저 안에서 NovelAI 공식 API로 직접 연결합니다. 별도 CORS 프록시나 사용자 소유 백엔드는 사용하지 않습니다.
 
 ## 주요 기능
 
@@ -25,6 +25,7 @@ NovelAI Image Generation API를 사용하는 비공식 WebUI입니다. NovelAI �
 - 생성 History, Pin, Download, 결과를 Director Tool 입력으로 재사용
 - **Anlas 잔량 + 구독 티어 표시**, 생성/도구 사용 후 자동 갱신
 - Persistent API Token 로그인과 Email/Password 로그인 모두 지원
+- GitHub Pages 정적 호스팅에서 직접 실행
 
 ## 인증
 
@@ -32,26 +33,39 @@ NovelAI Image Generation API를 사용하는 비공식 WebUI입니다. NovelAI �
 
 WebUI의 로그인 창에 토큰을 붙여 넣습니다. 기본값은 `sessionStorage`이며 브라우저를 닫으면 사라집니다. “이 브라우저에 토큰 저장”을 켠 경우에만 `localStorage`를 사용합니다.
 
+NovelAI의 사용자용 API 클라이언트는 사용자의 Persistent API Token을 요청하는 방식을 권장하므로 이 방식을 우선 권장합니다.
+
 ### Email / Password
 
-비밀번호를 서버에 저장하지 않습니다. 서버는 NovelAI 호환 access key를 메모리에서 파생해 `/user/login`으로 access token을 받고, 비밀번호 값은 요청 종료 후 유지하지 않습니다. 공개/공용 서버에 배포했다면 비밀번호 로그인보다 NovelAI Persistent API Token 사용을 권장합니다.
+ID/비밀번호 방식도 정적 페이지에서 지원합니다. BLAKE2b + Argon2id access key 계산을 **브라우저 내부에서 수행**한 뒤 NovelAI의 `/user/login`에 직접 요청합니다.
 
-## 실행
+- 비밀번호를 GitHub Pages나 별도 서버에 저장하지 않습니다.
+- 비밀번호는 access key 계산 중 브라우저 메모리에서만 사용합니다.
+- 로그인 후 받은 access token만 세션에 유지합니다.
+
+## 정적 구조
+
+브라우저에서 직접 호출하는 공식 호스트:
+
+- `https://image.novelai.net/ai/generate-image`
+- `https://image.novelai.net/ai/augment-image`
+- `https://image.novelai.net/ai/encode-vibe`
+- `https://image.novelai.net/ai/generate-image/suggest-tags`
+- `https://api.novelai.net/ai/upscale`
+- `https://api.novelai.net/user/subscription`
+- `https://api.novelai.net/user/login`
+
+따라서 `server.js`, Express, 서버 환경변수, API 프록시가 필요하지 않습니다.
+
+## 로컬에서 열기
+
+정적 파일 서버 아무 것이나 사용할 수 있습니다. 예:
 
 ```bash
-npm install
-npm start
+python -m http.server 8000 -d public
 ```
 
-기본 주소: `http://localhost:3000`
-
-환경변수:
-
-```bash
-PORT=3000
-```
-
-Node.js 20 이상 권장.
+그 후 `http://localhost:8000`을 엽니다.
 
 ## V5 기능 참고
 
@@ -59,19 +73,6 @@ Node.js 20 이상 권장.
 
 V5 출시 시점에는 Precise Reference와 Vibe Transfer가 아직 V5에 제공되지 않았으므로 WebUI에서도 V5 선택 시 해당 업로드 기능을 잠급니다. V4.5로 바꾸면 Precise Reference와 Vibe Transfer를 사용할 수 있습니다.
 
-## 서버 API 프록시
-
-브라우저가 NovelAI 비밀 토큰을 제3자 CORS 프록시에 노출하지 않도록 같은 서버에서 아래 allow-list 엔드포인트만 전달합니다.
-
-- `/api/nai/generate` → NovelAI image generate
-- `/api/nai/augment` → Director Tools
-- `/api/nai/upscale` → NovelAI upscale
-- `/api/nai/encode-vibe` → Vibe encoding
-- `/api/nai/tags` → tag suggestions
-- `/api/nai/subscription` → Anlas / subscription
-
-서버는 요청 본문이나 인증 토큰을 로그로 출력하지 않습니다.
-
 ## 주의
 
-이 프로젝트는 NovelAI/Anlatan의 공식 제품이 아닙니다. API 사양 또는 모델 기능이 변경되면 일부 옵션 조정이 필요할 수 있습니다.
+이 프로젝트는 NovelAI/Anlatan의 공식 제품이 아닙니다. API 사양 또는 CORS 정책이 변경되면 정적 클라이언트의 일부 기능도 함께 조정해야 할 수 있습니다.
