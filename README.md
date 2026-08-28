@@ -1,5 +1,7 @@
 # NAI WebUI
 
+https://jeong-jimin-github.github.io/NAI_WebUI/
+
 NovelAI Image Generation API를 브라우저에서 직접 호출하는 **비공식 정적 WebUI**입니다. 백엔드·프록시·서버 환경변수 없이 GitHub Pages에서 동작합니다.
 
 이 코드베이스는 원본 저장소의 기능을 [SPEC.md](./SPEC.md)로 추출한 뒤 **전부 지우고 처음부터 다시 구현**한 것입니다. 원본 클라이언트 코드, 공식 사이트 HTML/CSS, 공식 갤러리 에셋은 포함하지 않습니다.
