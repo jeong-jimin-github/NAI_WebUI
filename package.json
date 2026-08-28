@@ -1,11 +1,14 @@
 {
   "name": "nai-webui",
-  "version": "1.1.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
-  "description": "Static NovelAI Image API WebUI with V5 support",
+  "description": "Static unofficial NovelAI Image API WebUI, rewritten from a functional spec",
   "scripts": {
-    "check": "node --check public/static-adapter.js && node --check public/auth-resilience.js && node --check public/app.js && node --check public/ui-fixes.js"
+    "check": "node scripts/check.mjs",
+    "start": "node scripts/serve.mjs"
   },
-  "engines": { "node": ">=24" }
+  "engines": {
+    "node": ">=18"
+  }
 }
